@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Alarms and Notifications for Redshift Cluster'
+Transform: AWS::SecretsManager-2020-07-23
+Parameters:
+  NotificationList:
+    Type: String
+    Description: The email notification list that is used to configure an SNS topic for sending CloudWatch alarm and event notifications.
+    AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
+    ConstraintDescription: provide a valid email address.
+    Default: 'ops@company.com'
+    
+Resources:
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint: !Ref NotificationList
+          Protocol: email
+  DiskSpacealarmredshift:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      MetricName: !Join
+        - ''
+        - - !ImportValue RedshiftCluster
+          - High-PercentageDiskSpaceUsed
+      AlarmDescription: !Join
+        - ''
+        - - DiskSpace Utilization > 85% for
+          - !ImportValue RedshiftCluster
+      Namespace: AWS/Redshift
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 3
+      Threshold: 85
+      AlarmActions:
+        - !Ref SNSTopic
+      Dimensions:
+        - Name: ClusterIdentifier
+          Value: !ImportValue RedshiftCluster
+      ComparisonOperator: GreaterThanThreshold
+      Unit: Percent
+  HighCPUutilizationalarmredshift:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      MetricName: !Join
+        - ''
+        - - !ImportValue RedshiftCluster
+          - High-CPUUtilization
+      AlarmDescription: !Join
+        - ''
+        - - CPUUtilization > 95% for last 15 min for cluster
+          - !ImportValue RedshiftCluster
+      Namespace: AWS/Redshift
+      Statistic: Average
+      Period: 900
+      EvaluationPeriods: 3
+      Threshold: !FindInMap [ Redshift, CPUUtilizationAlarm, Threshold]
+      AlarmActions:
+        - !Ref SNSTopic
+      Dimensions:
+        - Name: ClusterIdentifier
+          Value: !ImportValue RedshiftCluster
+      ComparisonOperator: GreaterThanThreshold
+      Unit: Percent
