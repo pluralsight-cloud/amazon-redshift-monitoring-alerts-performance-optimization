@@ -231,8 +231,6 @@ Mappings:
     AuditLogging:
       ExpirationDays: 400
       TransitionDays: 60
-    CPUUtilizationAlarm:
-      Threshold: 95
     AZ:
       Relocation: true
   RedshiftLoggingAccountIDRegionMap:
