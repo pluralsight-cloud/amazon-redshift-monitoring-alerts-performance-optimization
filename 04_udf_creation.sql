@@ -17,3 +17,4 @@ select
     pricepaid * 0.20 as premium_commission
 from sales;
 
+-- Can also write Lambda UDFs and SQL UDFs
