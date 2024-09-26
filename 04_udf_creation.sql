@@ -12,7 +12,7 @@ $$ language plpythonu;
 -- the team meets a monthly goal. They get 20% of the price paid
 -- or the contracted commission, whichever is greater
 select
-    which_is_bigger (commission, pricepaid*0.20) as team_goal_commission,
+    bigger_of_two_values (commission, pricepaid*0.20) as team_goal_commission,
     commission as conracted_commission,
     pricepaid * 0.20 as premium_commission
 from sales;
